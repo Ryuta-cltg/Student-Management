@@ -33,11 +33,11 @@ public interface StudentRepository {
       +"VALUES(#{studentId}, #{courseName}, #{startDate}, #{endDate}) ")
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void registerStudentCourses(StudentCourses studentCourses);
-
+  //生徒情報の更新
   @Update("UPDATE students SET full_name = #{fullname}, furigana = #{furigana}, nickname = #{nickname}, email = #{email},"
          +"region = #{region}, age = #{age}, gender = #{gender}, remark = #{remark}, is_deleted = #{isDeleted} WHERE id = #{id}")
   void updateStudent(Student student);
-
+  //コース情報の更新
   @Update("UPDATE students_courses SET course_name = #{courseName} WHERE id = #{id}")
   void updateStudentCourses(StudentCourses studentCourses);
 }
