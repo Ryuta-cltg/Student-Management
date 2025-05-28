@@ -15,7 +15,7 @@ import student.management.Student.Management.repository.StudentRepository;
 @Service
 public class StudentService {
 
-  private StudentRepository repository;
+  private final StudentRepository repository;
 
   @Autowired
   public StudentService(StudentRepository repository) {
