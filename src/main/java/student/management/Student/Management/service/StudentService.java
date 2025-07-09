@@ -30,6 +30,7 @@ public class StudentService {
    *
    * @return 受講生詳細一覧(全件)
    */
+
   public List<StudentDetail> searchStudentList() {
     List<Student> studentList =repository.search();
     List<StudentCourse> studentCourseList = repository.searchStudentCourseList();
@@ -43,6 +44,7 @@ public class StudentService {
    * @param id　受講生ID
    * @return 受講生詳細
    */
+
    public StudentDetail searchStudent(String id){
     Student student = repository.searchStudent(id);
      List<StudentCourse> studentCourse= repository.searchStudentCourse(student.getId());
