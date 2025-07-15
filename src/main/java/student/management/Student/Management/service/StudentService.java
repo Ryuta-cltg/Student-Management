@@ -11,7 +11,6 @@ import student.management.Student.Management.data.Student;
 import student.management.Student.Management.data.StudentCourse;
 import student.management.Student.Management.domein.StudentDetail;
 import student.management.Student.Management.repository.StudentRepository;
-    //処理のロジックを実装
 
 @Service
 public class StudentService {
@@ -25,8 +24,8 @@ public class StudentService {
   }
 
   /**
-   * 受講生詳細の一覧検索
-   * 全件検索を行うので、条件指定は行わない。
+   * 受講生詳細の一覧検索です。
+   * 全件検索を行うので、条件指定は行いません。。
    *
    * @return 受講生詳細一覧(全件)
    */
@@ -58,6 +57,7 @@ public class StudentService {
    * @param studentDetail 受講生詳細
    * @return 登録情報を付与した受講生詳細
    */
+
   @Transactional
   public StudentDetail registerStudent(StudentDetail studentDetail) {
     Student student = studentDetail.getStudent();
@@ -71,11 +71,12 @@ public class StudentService {
   }
 
   /**
-   * 受講生コース情報を登録する際の初期情報を設定する。
+   * 受講生コース情報を登録する際の初期情報を設定します。
    *
    * @param studentCourse 受講生コース情報
    * @param student 受講生
    */
+
   private  void initStudentCourse(StudentCourse studentCourse, Student student) {
     LocalDateTime now = LocalDateTime.now();
     studentCourse.setStudentId(student.getId());
@@ -84,10 +85,12 @@ public class StudentService {
   }
 
   /**
-   * 受講生詳細の更新を行います。受講生の情報と受講生コース情報をそれぞれ更新します。
+   * 受講生詳細の更新を行います。
+   * 受講生の情報と受講生コース情報をそれぞれ更新します。
    *
    * @param studentDetail 受講生詳細
    */
+
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
     repository.updateStudent(studentDetail.getStudent());

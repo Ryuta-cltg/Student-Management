@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import student.management.Student.Management.domein.StudentDetail;
+import student.management.Student.Management.exception.MyException;
 import student.management.Student.Management.service.StudentService;
 
 @Tag(name = "受講生API", description = "受講生の検索・登録・更新などを提供するAPIです。")
@@ -83,4 +84,15 @@ public class StudentController {
     service.updateStudent(studentDetail);
     return ResponseEntity.ok("更新処理が成功しました。");
   }
+
+  @Operation(summary = "例外発生のテスト用", description = "このエンドポイントにアクセスすると例外がスローされます（動作確認用）")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "400", description = "意図的に発生させた例外です")
+  })
+
+  @GetMapping("/exception")
+  public void throwException() {
+    throw new MyException("これはテスト用の例外です。");
+  }
+
 }

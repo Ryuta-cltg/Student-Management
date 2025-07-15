@@ -1,4 +1,4 @@
-package exception;
+package student.management.Student.Management.exception;
 
 /**
  * アプリケーション内で発生する業務的な例外を表すカスタム例外クラスです。
@@ -19,3 +19,4 @@ public class MyException extends RuntimeException {
     super(message);
   }
 }
+
