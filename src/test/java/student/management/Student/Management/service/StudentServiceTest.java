@@ -127,5 +127,6 @@ class StudentServiceTest {
     // Assert（検証）: リポジトリのメソッドが正しく呼び出されたかを確認
     verify(repository).updateStudent(student);
     verify(repository).updateStudentCourse(course);
+
   }
 }
