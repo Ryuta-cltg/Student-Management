@@ -128,5 +128,4 @@ class StudentServiceTest {
     verify(repository).updateStudent(student);
     verify(repository).updateStudentCourse(course);
   }
-
 }
