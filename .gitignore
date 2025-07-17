@@ -7,7 +7,6 @@
 /.gradle/
 
 # IntelliJ project files
-.idea/
 .idea/shelf/
 .idea/workspace.xml
 
