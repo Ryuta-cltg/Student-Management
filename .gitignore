@@ -7,8 +7,10 @@
 /.gradle/
 
 # IntelliJ project files
-.idea/
-*.iml
+.idea/*
+!.idea/modules.xml
+
+# .iml files
 
 # Logs
 *.log
