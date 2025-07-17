@@ -21,6 +21,7 @@ public class StudentConverter {
    * @param studentCourseList 受講生コース情報のリスト
    * @return 受講生詳細情報のリスト
    */
+
   public List<StudentDetail> convertStudentDetails(List<Student> studentList,
       List<StudentCourse> studentCourseList) {
     List<StudentDetail> studentDetails = new ArrayList<>();
