@@ -8,7 +8,8 @@
 
 # IntelliJ project files
 .idea/
-*.iml
+.idea/shelf/
+.idea/workspace.xml
 
 # Logs
 *.log

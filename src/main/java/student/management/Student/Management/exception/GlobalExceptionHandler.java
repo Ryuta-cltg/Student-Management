@@ -33,7 +33,6 @@ public class GlobalExceptionHandler {
   /**
    * 独自例外用
    * アプリケーション内で発生する業務的な例外 {@link MyException} を処理します。
-   *
    * この例外は、バリデーションやビジネスロジック上の明示的なエラーで使用され、
    * クライアントには HTTP 400（Bad Request） として返却されます。
    *
@@ -49,7 +48,6 @@ public class GlobalExceptionHandler {
   /**
    * 予期しないエラー用
    * アプリケーションで発生した予期しない例外（全ての {@link Exception}）を処理します。
-   *
    * ログ出力や通知の対象となり得る、開発者の想定外の例外です。
    * クライアントには一般的なエラーメッセージと HTTP 500（内部サーバーエラー）を返却します。
    *
