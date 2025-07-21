@@ -1,12 +1,16 @@
 package student.management.Student.Management.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -16,9 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.domein.StudentDetail;
+import student.management.Student.Management.exception.MyException;
 import student.management.Student.Management.service.StudentService;
 
 @WebMvcTest(StudentController.class)
@@ -97,5 +103,47 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.student.fullname").value("高橋一美"));
   }
   //個別取得(異常系)
+  @Test
+  void 受講生詳細_存在しないIDを指定するとMyExceptionが返ること()throws Exception{
+
+    given(service.searchStudent("999")).willThrow(new MyException("存在しないIDです。"));
+     mockMvc.perform(get("/student/999"))
+         .andExpect(status().isBadRequest())
+         .andExpect(content().string("存在しないIDです。"));
+  }
+  @Test
+  void 受講生詳細_IDが長すぎる場合は400が返ってくること()throws Exception{
+    mockMvc.perform(get("/student/9999"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Test
+  void 受講生登録_正しい入力で登録が成功すること()throws Exception{
+    Student student = new Student();
+
+    student.setId("1");
+    student.setFullname("高橋一美");
+    student.setFurigana("たかはしかずみ");
+    student.setNickname("かみ");
+    student.setEmail("takahasi@exanple.com");
+    student.setRegion("北海道");
+    student.setGender("女性");
+    student.setAge(33);
+    student.setRemark("備考");
+    student.setDeleted(false);
+
+    StudentDetail studentDetail = new StudentDetail();
+    studentDetail.setStudent(student);
+
+    given(service.registerStudent(any())).willReturn(studentDetail);
+
+    mockMvc.perform(post("/registerStudent")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(studentDetail)))
+        .andExpect(status().isOk());
+  }
 
 }
