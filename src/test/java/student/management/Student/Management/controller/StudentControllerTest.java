@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -46,23 +45,21 @@ class StudentControllerTest {
   private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   // 一覧取得（正常系）
-  // 受講生一覧の取得APIで 200 OK が返り、service が1回呼ばれることを確認
   @Test
   void 受講生詳細_一覧検索ができて空のリストが返ってくること() throws Exception {
-
+    //Act & Assert
     mockMvc.perform(get("/studentList"))
         .andExpect(status().isOk());
 
     verify(service, times(1)).searchStudentList();
   }
 
-  // バリデーション正常系
-  // Studentエンティティの各項目に適切な値を設定したとき、バリデーション違反が発生しないことを確認
+  // バリデーション(正常系)
   @Test
   void 受講生詳細_受講生で適切な値を入力したときに入力チェックに異常が発生しないこと() {
     Student student = new Student();
 
-    //バリデーション対応項目と値
+    //Arrange : バリデーション対応項目と値
     student.setId("1");
     student.setFullname("高橋一美");
     student.setFurigana("たかはしかずみ");
@@ -72,29 +69,32 @@ class StudentControllerTest {
     student.setGender("女性");
     student.setAge(33);
 
+    //Act
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
+    //Assert
     Assertions.assertEquals(0, violations.size());
   }
 
-  // バリデーション異常
-  // Studentエンティティに不正なID（数字以外）を設定したとき、バリデーション違反が発生することを確認
+  // バリデーション(異常系)
   @Test
   void 受講生詳細_受講生でIDに数字以外が入力された時に入力チェックがかかること() {
     Student student = new Student();
     student.setId("テストです");
 
+    //Act
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
+    //Assert
     Assertions.assertEquals(7, violations.size());
   }
 
-  //個別取得(正常)
-  //StudentにIDとフルネームを設定し、それをテスト用に用意したdetailに返す。
+  //個別取得(正常系)
   @Test
-  void 受講生詳細_IDを指定することで受講生情報が帰ること() throws Exception {
-    Student student = new Student();
+  void 受講生詳細_IDを指定することで受講生情報が返ること() throws Exception {
 
+    //Arrange
+    Student student = new Student();
     student.setId("1");
     student.setFullname("高橋一美");
 
@@ -103,6 +103,7 @@ class StudentControllerTest {
 
     given(service.searchStudent("1")).willReturn(detail);
 
+    //Act & Assert
     mockMvc.perform(get("/student/{id}", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.student.id").value("1"))
@@ -110,7 +111,6 @@ class StudentControllerTest {
   }
 
   //個別取得(異常系)
-  // 存在しないIDを指定したとき、MyExceptionが発生して400が返る
   @Test
   void 受講生詳細_存在しないIDを指定するとMyExceptionが返ること() throws Exception {
 
@@ -127,122 +127,152 @@ class StudentControllerTest {
         .andExpect(status().isBadRequest());
   }
 
-  @Autowired
-  private ObjectMapper objectMapper;
-
   // 登録（正常系）
   // 正しいStudentDetailを渡すと200 OKが返る
   @Test
   void 受講生登録_正しい入力で登録が成功すること() throws Exception {
-    Student student = new Student();
 
-    student.setId("1");
-    student.setFullname("高橋一美");
-    student.setFurigana("たかはしかずみ");
-    student.setNickname("かみ");
-    student.setEmail("takahasi@exanple.com");
-    student.setRegion("北海道");
-    student.setGender("女性");
-    student.setAge(33);
-    student.setRemark("備考");
-    student.setDeleted(false);
+    //Arrange
+    String json = """
+  {
+    "student": {
+      "id": "1",
+      "fullname": "高橋一美",
+      "furigana": "たかはしかずみ",
+      "nickname": "かみ",
+      "email": "takahasi@example.com",
+      "region": "北海道",
+      "gender": "女性",
+      "age": 33,
+      "remark": "備考",
+      "deleted": false
+    },
+    "studentCourseList": [
+      {
+        "courseName": "デザインコース"
+      }
+    ]
+  }
+  """;
 
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudent(student);
+    given(service.registerStudent(any())).willReturn(new StudentDetail());
 
-    given(service.registerStudent(any())).willReturn(studentDetail);
-
+    // Act & Assert
     mockMvc.perform(post("/registerStudent")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(studentDetail)))
-            .andExpect(status().isOk());
+            .content(json))
+        .andExpect(status().isOk());
   }
 
   // 登録（異常系）
-  // サービス層でMyExceptionが発生した場合に400エラーが返ること
   @Test
   void 受講生登録_サービスでMyExceptionが発生した場合400番エラーが返ること() throws Exception {
-    Student student = new Student();
 
-    student.setId("1");
-    student.setFullname("高橋一美");
-    student.setFurigana("たかはしかずみ");
-    student.setNickname("かみ");
-    student.setEmail("takahasi@exanple.com");
-    student.setRegion("北海道");
-    student.setGender("女性");
-    student.setAge(33);
-    student.setRemark("備考");
-    student.setDeleted(false);
+    //Arrange
+    String json = """
+  {
+    "student": {
+      "id": "1",
+      "fullname": "高橋一美",
+      "furigana": "たかはしかずみ",
+      "nickname": "かみ",
+      "email": "takahasi@example.com",
+      "region": "北海道",
+      "gender": "女性",
+      "age": 33,
+      "remark": "備考",
+      "deleted": false
+    },
+    "studentCourseList": [
+      {
+        "courseName": "デザインコース"
+      }
+    ]
+  }
+  """;
 
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudent(student);
+    given(service.registerStudent(any()))
+        .willThrow(new MyException("登録失敗"));
 
-    given(service.registerStudent(any())).willThrow(new MyException("登録失敗"));
-
+    //Act & Assert
     mockMvc.perform(post("/registerStudent")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(student)))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string("登録失敗"));
+            .content(json))
+        .andExpect(status().isBadRequest());
+
   }
 
   // 更新（正常系）
-  // 正しい入力で更新が成功し、成功メッセージが返る
   @Test
   void 受講生更新_正しい入力で更新成功すること()throws Exception{
-    Student student = new Student();
 
-    student.setId("1");
-    student.setFullname("高橋一美");
-    student.setFurigana("たかはしかずみ");
-    student.setNickname("かみ");
-    student.setEmail("takahasi@exanple.com");
-    student.setRegion("北海道");
-    student.setGender("女性");
-    student.setAge(33);
-    student.setRemark("備考");
-    student.setDeleted(false);
+    //Arrange
+    String json = """
+  {
+    "student": {
+      "id": "1",
+      "fullname": "高橋一美",
+      "furigana": "たかはしかずみ",
+      "nickname": "かみ",
+      "email": "takahasi@example.com",
+      "region": "北海道",
+      "gender": "女性",
+      "age": 33,
+      "remark": "備考",
+      "deleted": false
+    },
+    "studentCourseList": [
+      {
+        "courseName": "デザインコース"
+      }
+    ]
+  }
+  """;
 
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudent(student);
-
+    //Act & Assert
     mockMvc.perform(put("/updateStudent")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(studentDetail)))
+            .content(json))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("更新処理が成功しました。")));
   }
 
   // 更新（異常系）
-  // サービスで例外が発生した場合に400が返る
   @Test
   void 受講生更新_サービスでMyExceptionが発生した場合400番エラーが返ってくること()throws Exception{
-    Student student = new Student();
 
-    student.setId("1");
-    student.setFullname("高橋一美");
-    student.setFurigana("たかはしかずみ");
-    student.setNickname("かみ");
-    student.setEmail("takahasi@exanple.com");
-    student.setRegion("北海道");
-    student.setGender("女性");
-    student.setAge(33);
-    student.setRemark("備考");
-    student.setDeleted(false);
+    //Arrange
+    String json = """
+  {
+    "student": {
+      "id": "1",
+      "fullname": "高橋一美",
+      "furigana": "たかはしかずみ",
+      "nickname": "かみ",
+      "email": "takahasi@example.com",
+      "region": "北海道",
+      "gender": "女性",
+      "age": 33,
+      "remark": "備考",
+      "deleted": false
+    },
+    "studentCourseList": [
+      {
+        "courseName": "Javaコース"
+      }
+    ]
+  }
+  """;
 
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudent(student);
+    doThrow(new MyException("更新失敗")).when(service).updateStudent(any());
 
-    doThrow(new MyException("更新失敗"))
-        .when(service)
-        .updateStudent(any());
-
+    //Act & Assert
     mockMvc.perform(put("/updateStudent")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(studentDetail)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("更新失敗"));
+
   }
 
   // 例外発生のシミュレーション（テスト用）
