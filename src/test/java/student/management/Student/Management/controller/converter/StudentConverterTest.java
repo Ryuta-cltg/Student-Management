@@ -1,5 +1,8 @@
 package student.management.Student.Management.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +14,7 @@ class StudentConverterTest {
   private final StudentConverter converter = new StudentConverter();
 
   @Test
-  void convertStudentDetails_正しくマッピングされること(){
+  void 受講生詳細_StudentとCourse情報が正しくマッピングされること(){
     //Arrange
     Student student1 = new Student();
     student1.setId("1");
@@ -46,6 +49,16 @@ class StudentConverterTest {
     Assertions.assertEquals("2",detail2.getStudent().getId());
     Assertions.assertEquals(1,detail2.getStudentCourseList().size());
     Assertions.assertEquals("Java",detail2.getStudentCourseList().getFirst().getCourseName());
+  }
 
+  @Test
+  void 受講生詳細_空のリストを渡すと空のリストが返る(){
+    //Arrange
+    List<Student>studentList = new ArrayList<>();
+    List<StudentCourse>courseList =new ArrayList<>();
+    //Act
+    List<StudentDetail> result = converter.convertStudentDetails(studentList,courseList);
+    //Assert
+    assertThat(result).isEmpty();
   }
 }
