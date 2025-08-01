@@ -2,10 +2,9 @@ package student.management.Student.Management.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -16,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -23,53 +23,61 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import student.management.Student.Management.controller.converter.StudentConverter;
 import student.management.Student.Management.data.Student;
-import student.management.Student.Management.domein.StudentDetail;
+import student.management.Student.Management.data.StudentCourse;
 import student.management.Student.Management.exception.MyException;
+import student.management.Student.Management.repository.StudentRepository;
 import student.management.Student.Management.service.StudentService;
 
 @WebMvcTest(StudentController.class)
+@Import({StudentService.class, StudentConverter.class})
 class StudentControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
+  @SuppressWarnings({"removal",})
 
-  // StudentServiceのMockをDI。Controller単体テストのため。
-  @SuppressWarnings("removal")
   @MockBean
-  private StudentService service;
+  private StudentRepository repository;
 
+  @SuppressWarnings({"resource"})
   // バリデーションチェック用のValidatorインスタンス生成
-  @SuppressWarnings("resource")
   private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   @Test
   @DisplayName("正常系：受講生一覧を取得し、空のリストが返ること")
   void 受講生詳細_一覧検索ができて空のリストが返ってくること() throws Exception {
 
+    when(repository.search()).thenReturn(List.of());
+    when(repository.searchStudentCourseList()).thenReturn(List.of());
+
     //Act & Assert : GETリクエストを実行し、ステータス200とサービス呼び出し回数を検証
     mockMvc.perform(get("/studentList"))
-        .andExpect(status().isOk());
-
-    verify(service, times(1)).searchStudentList();
+        .andExpect(status().isOk())
+        .andExpect(content().json("[]"));
   }
 
   @Test
   @DisplayName("正常系：受講生に適切な値を入力するとバリデーションエラーが発生しない")
   void 受講生詳細_受講生で適切な値を入力したときに入力チェックに異常が発生しないこと() {
-    Student student = new Student();
 
-    //Arrange : 正しい項目値をセット
-    student.setId("1");
-    student.setFullname("高橋一美");
-    student.setFurigana("たかはしかずみ");
-    student.setNickname("かみ");
-    student.setEmail("takahasi@example.com");
-    student.setRegion("北海道");
-    student.setGender("女性");
-    student.setAge(33);
+    //Arrange : 正常な項目値の設定
+    Student student = new Student(
+        "1",
+        "高橋一美",
+        "たかはしかずみ",
+        "かみ",
+        "takahashi@example.com",
+        "北海道",
+        33,
+        "女性",
+        "備考",
+        false
+    );
 
     //Act : バリデーションの実行
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
@@ -97,27 +105,44 @@ class StudentControllerTest {
   void 受講生詳細_IDを指定することで受講生情報が返ること() throws Exception {
 
     //Arrange ： サービスの戻り値を設定
-    Student student = new Student();
-    student.setId("1");
-    student.setFullname("高橋一美");
+    Student student = new Student(
+        "1",
+        "高橋一美",
+        "たかはしかずみ",
+        "かみ",
+        "takahashi@example.com",
+        "北海道",
+        33,
+        "女性",
+        " ",
+        false
+    );
 
-    StudentDetail detail = new StudentDetail();
-    detail.setStudent(student);
+    List<StudentCourse> courseList = List.of();
 
-    given(service.searchStudent("1")).willReturn(detail);
+    when(repository.searchStudent("1")).thenReturn(student);
+    when(repository.searchStudentCourse("1")).thenReturn(courseList);
 
     //Act & Assert ： GET実行後のレスポンスを検証
     mockMvc.perform(get("/student/{id}", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.student.id").value("1"))
-        .andExpect(jsonPath("$.student.fullname").value("高橋一美"));
+        .andExpect(jsonPath("$.student.fullname").value("高橋一美"))
+        .andExpect(jsonPath("$.student.furigana").value("たかはしかずみ"))
+        .andExpect(jsonPath("$.student.nickname").value("かみ"))
+        .andExpect(jsonPath("$.student.email").value("takahashi@example.com"))
+        .andExpect(jsonPath("$.student.region").value("北海道"))
+        .andExpect(jsonPath("$.student.age").value(33))
+        .andExpect(jsonPath("$.student.gender").value("女性"))
+        .andExpect(jsonPath("$.student.remark").value(" "))
+        .andExpect(jsonPath("$.student.deleted").value(false));
   }
 
   @Test
   @DisplayName("異常系：存在しないIDを指定するとMyExceptionが返る")
   void 受講生詳細_存在しないIDを指定するとMyExceptionが返ること() throws Exception {
     // Arrange：例外をスローするようモック設定
-    given(service.searchStudent("999")).willThrow(new MyException("存在しないIDです。"));
+    when(repository.searchStudent("999")).thenThrow(new MyException("存在しないIDです。"));
 
     // Act & Assert：GET時に400エラーとメッセージを検証
     mockMvc.perform(get("/student/999"))
@@ -161,8 +186,8 @@ class StudentControllerTest {
   }
   """;
 
-    // Arrange : MockしたStudentService が正常に登録処理を行い、空のStudentDetailを返すように設定
-    given(service.registerStudent(any())).willReturn(new StudentDetail());
+    // Arrange :
+    doNothing().when(repository).registerStudent(any());
 
     // Act & Assert : 登録APIに対してPOSTリクエストを送信し、HTTPステータス200（OK）が返されることを検証
     mockMvc.perform(post("/registerStudent")
@@ -199,8 +224,7 @@ class StudentControllerTest {
   """;
 
     // Arrange : サービス層で MyException をスローするようモック設定
-    given(service.registerStudent(any()))
-        .willThrow(new MyException("登録失敗"));
+    doThrow(new MyException("登録失敗")).when(repository).registerStudent(any());
 
     //Act & Assert : 登録APIをPOSTリクエストで呼び出し、HTTP 400 BadRequest が返されることを検証
     mockMvc.perform(post("/registerStudent")
@@ -272,7 +296,7 @@ class StudentControllerTest {
   }
   """;
 
-    doThrow(new MyException("更新失敗")).when(service).updateStudent(any());
+    doThrow(new MyException("更新失敗")).when(repository).updateStudent(any());
 
     //Act & Assert : 更新APIに対してPUTリクエストを送信し、HTTPステータス400（Bad Request）とメッセージ「更新失敗」が返ることを検証
     mockMvc.perform(put("/updateStudent")
