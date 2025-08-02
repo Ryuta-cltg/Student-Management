@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -52,8 +51,10 @@ public class StudentController {
   })
 
   @GetMapping ("/student/{id}")
-  public StudentDetail getStudent(
-      @PathVariable @Valid @Size(min = 1,max = 3) String id){
+  public StudentDetail getStudent(@PathVariable  String id) {
+    if (id.length() >3){
+      throw new MyException("IDは３文字以内で入力してください。");
+    }
     return service.searchStudent(id);
   }
 

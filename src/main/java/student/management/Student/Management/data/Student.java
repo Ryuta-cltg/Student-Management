@@ -7,12 +7,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 //Studentのデータ　カラム名に依存
-
 @Schema(description = "受講生情報")
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class Student {
