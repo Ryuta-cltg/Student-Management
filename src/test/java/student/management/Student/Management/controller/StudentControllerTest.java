@@ -117,7 +117,7 @@ class StudentControllerTest {
         "北海道",
         33,
         "女性",
-        " ",
+        "備考",
         false
     );
 
@@ -138,7 +138,7 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.student.region").value("北海道"))
         .andExpect(jsonPath("$.student.age").value(33))
         .andExpect(jsonPath("$.student.gender").value("女性"))
-        .andExpect(jsonPath("$.student.remark").value(" "))
+        .andExpect(jsonPath("$.student.remark").value("備考"))
         .andExpect(jsonPath("$.student.deleted").value(false));
   }
 
