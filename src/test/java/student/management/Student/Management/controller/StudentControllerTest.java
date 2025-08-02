@@ -39,8 +39,9 @@ class StudentControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
-  @SuppressWarnings({"removal",})
+  @SuppressWarnings({"removal"})
 
+  //Repositoryをモック化
   @MockBean
   private StudentRepository repository;
 
@@ -52,10 +53,11 @@ class StudentControllerTest {
   @DisplayName("正常系：受講生一覧を取得し、空のリストが返ること")
   void 受講生詳細_一覧検索ができて空のリストが返ってくること() throws Exception {
 
+    //Arrange : モック設定で空のリストを返す
     when(repository.search()).thenReturn(List.of());
     when(repository.searchStudentCourseList()).thenReturn(List.of());
 
-    //Act & Assert : GETリクエストを実行し、ステータス200とサービス呼び出し回数を検証
+    //Act & Assert : GETリクエストを実行し、からのリストが返ってくることを検証
     mockMvc.perform(get("/studentList"))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
@@ -82,13 +84,14 @@ class StudentControllerTest {
     //Act : バリデーションの実行
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
-    //Assert : エラー件数が0であることを検証
+    //Assert : エラー件数が0件であることを検証
     Assertions.assertEquals(0, violations.size());
   }
 
   @Test
   @DisplayName("異常系：受講生IDに不正な文字列を入力するとバリデーションエラーが発生する")
   void 受講生詳細_受講生でIDに数字以外が入力された時に入力チェックがかかること() {
+
     //Arrange : 不正なIDをセット
     Student student = new Student();
     student.setId("テストです");
@@ -120,6 +123,7 @@ class StudentControllerTest {
 
     List<StudentCourse> courseList = List.of();
 
+    // Arrange : ID=1 に対応する受講生とそのコース情報をモック設定
     when(repository.searchStudent("1")).thenReturn(student);
     when(repository.searchStudentCourse("1")).thenReturn(courseList);
 
@@ -141,6 +145,7 @@ class StudentControllerTest {
   @Test
   @DisplayName("異常系：存在しないIDを指定するとMyExceptionが返る")
   void 受講生詳細_存在しないIDを指定するとMyExceptionが返ること() throws Exception {
+
     // Arrange：例外をスローするようモック設定
     when(repository.searchStudent("999")).thenThrow(new MyException("存在しないIDです。"));
 
@@ -153,6 +158,7 @@ class StudentControllerTest {
   @Test
   @DisplayName("異常系：IDの桁数超過により400エラーが返る")
   void 受講生詳細_IDが長すぎる場合は400が返ってくること() throws Exception {
+
     // Act & Assert：GET /exception 実行で例外ハンドリングを確認
     mockMvc.perform(get("/student/9999"))
         .andExpect(status().isBadRequest());
@@ -186,7 +192,7 @@ class StudentControllerTest {
   }
   """;
 
-    // Arrange :
+    // Arrange :　登録処理を正常に通過させるため、例外をスローしないようにモック設定
     doNothing().when(repository).registerStudent(any());
 
     // Act & Assert : 登録APIに対してPOSTリクエストを送信し、HTTPステータス200（OK）が返されることを検証
@@ -208,7 +214,7 @@ class StudentControllerTest {
       "fullname": "高橋一美",
       "furigana": "たかはしかずみ",
       "nickname": "かみ",
-      "email": "takahasi@examplecom",
+      "email": "メールアドレス",
       "region": "北海道",
       "gender": "女性",
       "age": 33,
@@ -223,7 +229,7 @@ class StudentControllerTest {
   }
   """;
 
-    // Arrange : サービス層で MyException をスローするようモック設定
+    // Arrange : repository の registerStudent 呼び出し時に MyException をスローするようモック設定
     doThrow(new MyException("登録失敗")).when(repository).registerStudent(any());
 
     //Act & Assert : 登録APIをPOSTリクエストで呼び出し、HTTP 400 BadRequest が返されることを検証
@@ -295,7 +301,7 @@ class StudentControllerTest {
     ]
   }
   """;
-
+    //Arrange : 更新処理時に MyException をスローするよう repository をモック
     doThrow(new MyException("更新失敗")).when(repository).updateStudent(any());
 
     //Act & Assert : 更新APIに対してPUTリクエストを送信し、HTTPステータス400（Bad Request）とメッセージ「更新失敗」が返ることを検証
