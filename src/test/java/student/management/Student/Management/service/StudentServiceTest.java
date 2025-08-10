@@ -60,7 +60,6 @@ class StudentServiceTest {
 
   @Test
   void 受講生の詳細検索_IDに基づいて受講生とコースを取得し詳細を返すこと() {
-
     //Arrange（準備）: モックが返す受講生とコースを定義
     Student student = new Student();
     student.setId("999");
@@ -84,7 +83,6 @@ class StudentServiceTest {
 
   @Test
   void 受講生登録_受講生と受講生コースが適切に登録されること() {
-
     //Arrange（準備）: テストの対象となる受講生と受講生コース情報を定義
     Student student = new Student();
     student.setId("999");
@@ -113,7 +111,6 @@ class StudentServiceTest {
 
   @Test
   void 受講生更新_受講生とコース情報の更新が実行されること(){
-
     // Arrange（準備）: 受講生と複数の受講生コース情報を用意
     Student student = new Student();
     StudentCourse course = new StudentCourse();
@@ -128,5 +125,4 @@ class StudentServiceTest {
     verify(repository).updateStudent(student);
     verify(repository).updateStudentCourse(course);
   }
-
 }
