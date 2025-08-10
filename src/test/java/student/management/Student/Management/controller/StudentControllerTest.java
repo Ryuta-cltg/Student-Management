@@ -269,7 +269,6 @@ class StudentControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(json))
         .andExpect(status().isBadRequest());
-
   }
 
   @Test
@@ -342,7 +341,6 @@ class StudentControllerTest {
         .content(json))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("更新失敗"));
-
   }
 
   @Test

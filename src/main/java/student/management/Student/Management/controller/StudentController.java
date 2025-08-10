@@ -95,5 +95,4 @@ public class StudentController {
   public void throwException() {
     throw new MyException("これはテスト用の例外です。");
   }
-
 }
