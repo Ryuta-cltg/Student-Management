@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import student.management.Student.Management.data.Student;
@@ -69,13 +68,13 @@ class StudentConverterTest {
     List<StudentCourse> studentCourseList =List.of(course1,course2,course3);
 
     //Act : converterの呼び出し
-    List<StudentDetail> result = converter.convertStudentDetails(studentList,studentCourseList);
+    List<StudentDetail> actual = converter.convertStudentDetails(studentList,studentCourseList);
 
     //Assert : 受講生詳細が2件生成されていること
-    Assertions.assertEquals(2,result.size());
+    assertThat(actual).hasSize(2);
 
     // detail1（student1）の全値の検証
-    StudentDetail detail1 = result.getFirst();
+    StudentDetail detail1 = actual.getFirst();
     Student s1 = detail1.getStudent();
     StudentCourse c1 = detail1.getStudentCourseList().getFirst();
 
@@ -96,7 +95,7 @@ class StudentConverterTest {
     assertThat(c1.getEndDate()).isEqualTo(LocalDateTime.of(2025, 8, 31, 0, 0));
 
     // detail2（student2）に関する検証
-    StudentDetail detail2 = result.get(1);
+    StudentDetail detail2 = actual.get(1);
     Student s2 = detail2.getStudent();
     StudentCourse c2 = detail2.getStudentCourseList().getFirst();
 
@@ -118,7 +117,7 @@ class StudentConverterTest {
 
     // 追加検証："未登録" コースがどこにも含まれていないことを確認
    assertThat(
-       result.stream()
+       actual.stream()
         .flatMap(detail -> detail.getStudentCourseList().stream())
         .map(StudentCourse::getCourseName)
         .collect(Collectors.toList())
@@ -127,7 +126,24 @@ class StudentConverterTest {
         ).doesNotContain("未登録");
   }
 
-  //異常系 : 空のリスト
+  @DisplayName("コースが0件の受講生は空のコースリストで返すこと（仕様）")
+  @Test
+  void コースなし受講生は空配列で返す() {
+    // Arrange : コースが無い受講生1名をセット
+    Student s = new Student(); s.setId("1");
+
+    //Act : 受講生リストとコースリストをactualに代入
+    List<StudentDetail> actual = converter.convertStudentDetails(
+        List.of(s), List.of() // コースなし
+    );
+
+    //Assert : コース情報のない受講生に対して空のリストを返すことを確認
+    assertThat(actual).hasSize(1);
+    assertThat(actual.getFirst().getStudent().getId()).isEqualTo("1");
+    assertThat(actual.getFirst().getStudentCourseList()).isEmpty();
+  }
+
+  @DisplayName("空のリストを渡すと空のリストを返すこと")
   @Test
   void 受講生詳細_空のリストを渡すと空のリストが返る(){
 
@@ -141,24 +157,4 @@ class StudentConverterTest {
     //Assert : 空のリストが返ることを確認
     assertThat(result).isEmpty();
   }
-
-  //下記コードは現在の構成では必要ないが、構築の変更があった時のためにコメントアウト
-
-  //異常系 : StudentListがnull
-  /*@Test
-  void 受講生詳細_studentListがnullならNullPointerExceptionがスローされる(){
-    List<StudentCourse> courseList =new ArrayList<>();
-    assertThrows(NullPointerException.class,() -> {
-      converter.convertStudentDetails(null, courseList);
-    });
-  }
-
-  //異常系 : StudentCourseListがnull 現状はnullを渡すようにはなっていないため、今後必要であれば
-  @Test
-  　void 受講生詳細_studentCourseListがnullならNullPointerExceptionがスローされる() {
-    List<Student> studentList = new ArrayList<>();
-    assertThrows(NullPointerException.class, () -> {
-      converter.convertStudentDetails(studentList, null);
-    });
-  }*/
 }
