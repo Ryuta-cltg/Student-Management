@@ -142,6 +142,8 @@ class StudentConverterTest {
     assertThat(result).isEmpty();
   }
 
+  //下記コードは現在の構成では必要ないが、構築の変更があった時のためにコメントアウト
+
   //異常系 : StudentListがnull
   /*@Test
   void 受講生詳細_studentListがnullならNullPointerExceptionがスローされる(){
