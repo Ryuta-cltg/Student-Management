@@ -39,7 +39,7 @@
   <!--受講生のコース情報の全件検索-->
   <select id="searchStudentCourseList" resultType="student.management.Student.Management.data.StudentCourse">
     SELECT
-      sc.id,
+      sc. id,
       sc.student_id           AS studentId,
       sc.course_id            AS courseId,
       c.course_name           AS courseName,
@@ -53,7 +53,7 @@
   <!--受講生IDに紐づく受講生コース情報を検索-->
   <select id="searchStudentCourse" resultType="student.management.Student.Management.data.StudentCourse">
     SELECT
-      sc.id,
+      sc. id,
       sc.student_id           AS studentId,
       sc.course_id            AS courseId,
       c.course_name           AS courseName,
