@@ -10,6 +10,7 @@ import student.management.Student.Management.controller.converter.StudentConvert
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.data.StudentCourse;
 import student.management.Student.Management.domein.StudentDetail;
+import student.management.Student.Management.exception.MyException;
 import student.management.Student.Management.repository.StudentRepository;
 
 @Service
@@ -63,11 +64,41 @@ public class StudentService {
     Student student = studentDetail.getStudent();
 
     repository.registerStudent(student);
-    studentDetail.getStudentCourseList().forEach(studentCourse -> {
-      initStudentCourse(studentCourse, student);
-      repository.registerStudentCourse(studentCourse);
+
+    studentDetail.getStudentCourseList().forEach(sc -> {
+      ensureValidCourseName(sc.getCourseName());     // ★追加：存在チェック
+      initStudentCourse(sc, student);                // 既存：初期値設定
+      repository.registerStudentCourse(sc);          // 既存：登録
     });
     return studentDetail;
+  }
+  /**
+   * 受講生詳細の更新を行います。
+   * 受講生の情報と受講生コース情報をそれぞれ更新します。
+   *
+   * @param studentDetail 受講生詳細
+   */
+
+  @Transactional
+  public void updateStudent(StudentDetail studentDetail) {
+    repository.updateStudent(studentDetail.getStudent());
+
+    // コースごとに：存在チェック → 更新
+    studentDetail.getStudentCourseList().forEach(sc -> {
+      ensureValidCourseName(sc.getCourseName());
+      repository.updateStudentCourse(sc);
+    });
+  }
+
+  //呼び出し専用の補助メソッド
+  /**
+   * コース名がマスタに存在することを保証（存在しなければ MyException）
+   */
+  private void ensureValidCourseName(String courseName) {
+    int count = repository.existsCourseName(courseName);
+    if (count == 0) {
+      throw new MyException("存在しないコースです: " + courseName);
+    }
   }
 
   /**
@@ -82,19 +113,5 @@ public class StudentService {
     studentCourse.setStudentId(student.getId());
     studentCourse.setStartDate(now);
     studentCourse.setEndDate(now.plusYears(1));
-  }
-
-  /**
-   * 受講生詳細の更新を行います。
-   * 受講生の情報と受講生コース情報をそれぞれ更新します。
-   *
-   * @param studentDetail 受講生詳細
-   */
-
-  @Transactional
-  public void updateStudent(StudentDetail studentDetail) {
-    repository.updateStudent(studentDetail.getStudent());
-    studentDetail.getStudentCourseList()
-        .forEach(repository::updateStudentCourse);
     }
   }

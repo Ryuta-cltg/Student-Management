@@ -65,6 +65,13 @@
     WHERE sc.student_id = #{studentId}
   </select>
 
+  <!-- コース名の存在チェック -->
+  <select id="existsCourseName" resultType="int">
+    SELECT COUNT(*)
+    FROM courses
+    WHERE course_name = #{courseName}
+  </select>
+
   <!--受講生を新規登録します。IDに関しては自動採番-->
   <insert id="registerStudent"
     parameterType="student.management.Student.Management.data.Student"
@@ -121,5 +128,4 @@
       course_name = #{courseName}
     WHERE id = #{id}
   </update>
-
 </mapper>

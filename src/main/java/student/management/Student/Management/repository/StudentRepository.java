@@ -2,6 +2,7 @@ package student.management.Student.Management.repository;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.data.StudentCourse;
 
@@ -37,6 +38,9 @@ public interface StudentRepository {
    * @return 受講生
    */
   List<StudentCourse> searchStudentCourse(String studentId);
+
+  //コース名の存在チェック
+  Integer existsCourseName(@Param("courseName") String courseName);
 
   /**
    * 受講生を新規登録します。IDに関しては自動採番を行う。
