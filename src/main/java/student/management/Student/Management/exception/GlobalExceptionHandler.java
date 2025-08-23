@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -45,6 +46,11 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<String> handleRse(ResponseStatusException ex){
+    return new ResponseEntity<>(ex.getReason(), ex.getStatusCode());
+  }
+
   /**
    * 予期しないエラー用
    * アプリケーションで発生した予期しない例外（全ての {@link Exception}）を処理します。
@@ -59,5 +65,4 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleOtherExceptions(Exception ex) {
     return new ResponseEntity<>("サーバー内部でエラーが発生しました", HttpStatus.INTERNAL_SERVER_ERROR);
   }
-
 }
