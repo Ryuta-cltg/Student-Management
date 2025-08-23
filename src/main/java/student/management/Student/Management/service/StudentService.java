@@ -4,8 +4,10 @@ package student.management.Student.Management.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import student.management.Student.Management.controller.converter.StudentConverter;
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.data.StudentCourse;
@@ -47,6 +49,10 @@ public class StudentService {
 
    public StudentDetail searchStudent(String id){
     Student student = repository.searchStudent(id);
+    if (student == null){
+      //404　Not Foundを返す
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND,"受講生が見つかりません: "+id);
+    }
      List<StudentCourse> studentCourse= repository.searchStudentCourse(student.getId());
      return new StudentDetail(student,studentCourse);
    }

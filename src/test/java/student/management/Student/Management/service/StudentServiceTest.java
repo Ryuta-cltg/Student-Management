@@ -1,9 +1,8 @@
 package student.management.Student.Management.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,10 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import student.management.Student.Management.controller.converter.StudentConverter;
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.data.StudentCourse;
 import student.management.Student.Management.domein.StudentDetail;
+import student.management.Student.Management.exception.MyException;
 import student.management.Student.Management.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,12 +75,21 @@ class StudentServiceTest {
     StudentDetail result = sut.searchStudent("999");
 
     // Assert（検証）: 結果の中身が期待通りであることを検証
-    assertEquals(student, result.getStudent());
-    assertEquals(courseList, result.getStudentCourseList());
-
+    assertThat(result.getStudent()).isEqualTo(student);
+    assertThat(result.getStudentCourseList()).isEqualTo(courseList);
     // Assert（確認）: モックが正しく呼び出されたかを検証
     verify(repository).searchStudent("999");
     verify(repository).searchStudentCourse("999");
+  }
+
+  @Test
+  void  受講生の詳細検索_存在しないIDなら404を投げること(){
+    // Arrange
+    when(repository.searchStudent("404")).thenReturn(null);
+
+    // Act & Assert
+    ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> sut.searchStudent("404"));
+    assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND) ;
   }
 
   @Test
@@ -88,9 +99,12 @@ class StudentServiceTest {
     student.setId("999");
 
     StudentCourse course = new StudentCourse();
+    course.setCourseName("Java");
     List<StudentCourse> courseList = List.of(course);
 
     StudentDetail detail = new StudentDetail(student, courseList);
+
+    when(repository.existsCourseName("Java")).thenReturn(1);
 
     // Act（実行）: 登録メソッドを呼び出し
     StudentDetail result = sut.registerStudent(detail);
@@ -100,23 +114,46 @@ class StudentServiceTest {
     verify(repository).registerStudentCourse(course);
 
     // Assert（間接検証）: initStudentCourse() による初期化内容の確認
-    assertEquals("999", course.getStudentId());
-    assertNotNull(course.getStartDate());
-    assertNotNull(course.getEndDate());
-    assertTrue(course.getEndDate().isAfter(course.getStartDate()));
+    assertThat(course.getStudentId()).isEqualTo("999");
+    assertThat(course.getStartDate()).isNotNull();
+    assertThat(course.getEndDate()).isNotNull();
+    assertThat(course.getEndDate()).isAfter(course.getStartDate());
 
     // 戻り値が同じオブジェクトか確認
-    assertSame(detail, result);
+    assertThat(result).isSameAs(detail);
+  }
+
+  //異常系
+  @Test
+  void 受講生登録_存在しないコース名ならMyException(){
+    //Arrange
+    Student student = new Student();
+    student.setId("1");
+    StudentCourse course = new StudentCourse();
+    course.setCourseName("存在しないコース");
+
+    StudentDetail detail = new StudentDetail(student, List.of(course));
+
+    when(repository.existsCourseName("存在しないコース")).thenReturn(0);
+
+    //Act&Assert
+    assertThatThrownBy(() -> sut.registerStudent(detail))
+        .isInstanceOf(MyException.class)
+        .hasMessageContaining("存在しないコース");
   }
 
   @Test
   void 受講生更新_受講生とコース情報の更新が実行されること(){
     // Arrange（準備）: 受講生と複数の受講生コース情報を用意
     Student student = new Student();
+
     StudentCourse course = new StudentCourse();
+    course.setCourseName("Java");
     List<StudentCourse> courseList = List.of(course);
 
     StudentDetail detail = new StudentDetail(student,courseList);
+
+    when(repository.existsCourseName("Java")).thenReturn(1);
 
     // Act（実行）: サービスの更新処理を実行
     sut.updateStudent(detail);
