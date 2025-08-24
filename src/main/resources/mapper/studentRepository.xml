@@ -91,13 +91,11 @@
     INSERT INTO students_courses(
     student_id,
     course_id,
-    course_name,
     start_date,
     end_date
     )
     VALUES(#{studentId},
     (SELECT course_id FROM courses WHERE course_name = #{courseName}),
-    #{courseName},
     #{startDate},
     #{endDate}
     )
@@ -124,8 +122,7 @@
           parameterType="student.management.Student.Management.data.StudentCourse">
     UPDATE students_courses
     SET
-      course_id   = (SELECT course_id FROM courses WHERE course_name = #{courseName}),
-      course_name = #{courseName}
+      course_id   = (SELECT course_id FROM courses WHERE course_name = #{courseName})
     WHERE id = #{id}
   </update>
 </mapper>

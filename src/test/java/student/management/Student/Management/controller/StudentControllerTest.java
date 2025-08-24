@@ -27,8 +27,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 import student.management.Student.Management.data.Student;
 import student.management.Student.Management.domein.StudentDetail;
 import student.management.Student.Management.exception.MyException;
@@ -106,7 +108,7 @@ class StudentControllerTest {
   }
 
   @Test
-  @DisplayName("正常系：ID指定で受講生詳細が取得返ること")
+  @DisplayName("正常系：ID指定で受講生詳細が取得できること")
   void 受講生詳細_IDを指定することで受講生情報が返ること() throws Exception {
 
     //Arrange ： サービスの戻り値を設定
@@ -145,16 +147,16 @@ class StudentControllerTest {
   }
 
   @Test
-  @DisplayName("異常系：存在しないIDを指定するとMyExceptionが返ること")
-  void 受講生詳細_存在しないIDを指定するとMyExceptionが返ること() throws Exception {
+  @DisplayName("異常系：存在しないIDを指定すると404エラーが返ること")
+  void 受講生詳細_存在しないIDを指定すると404エラーが返ること() throws Exception {
 
     // Arrange：例外をスローするようモック設定
-    when(service.searchStudent("999")).thenThrow(new MyException("存在しないIDです。"));
+    when(service.searchStudent("999"))
+        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "受講生が見つかりません: 999"));
 
     // Act & Assert：GET時に400エラーとメッセージを検証
     mockMvc.perform(get("/student/999"))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string("存在しないIDです。"));
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -218,6 +220,7 @@ class StudentControllerTest {
     },
     "studentCourseList": [
       {
+        "courseId" : 1,
         "courseName": "WM"
       }
     ]
@@ -235,7 +238,7 @@ class StudentControllerTest {
   }
 
   @Test
-  @DisplayName("異常系：登録時にMyExceptionが発生すると400エラーが返る")
+  @DisplayName("異常系：登録時にMyExceptionが発生すると400エラーが返ること")
   void 受講生登録_サービスでMyExceptionが発生した場合400番エラーが返ること() throws Exception {
 
     //Arrange : バリデーションエラー用の不正なJSON（メール形式不正）
@@ -255,6 +258,7 @@ class StudentControllerTest {
     },
     "studentCourseList": [
       {
+        "courseId" : 6,
         "courseName": "デザインコース"
       }
     ]
@@ -292,6 +296,7 @@ class StudentControllerTest {
     },
     "studentCourseList": [
       {
+        "courseId" : 1,
         "courseName": "WM"
       }
     ]
@@ -307,7 +312,7 @@ class StudentControllerTest {
   }
 
   @Test
-  @DisplayName("異常系：更新時にMyExceptionが発生すると400エラーが返る")
+  @DisplayName("異常系：更新時にMyExceptionが発生すると400エラーが返ること")
   void 受講生更新_サービスでMyExceptionが発生した場合400番エラーが返ってくること()throws Exception{
 
     //Arrange : 更新用のJSONリクエストと、ServiceがMyExceptionをスローするモック設定
@@ -327,6 +332,7 @@ class StudentControllerTest {
     },
     "studentCourseList": [
       {
+        "courseId" : 2,
         "courseName": "Javaコース"
       }
     ]
@@ -344,7 +350,7 @@ class StudentControllerTest {
   }
 
   @Test
-  @DisplayName("異常系：例外発生時に400エラーが返る")
+  @DisplayName("異常系：例外発生時に400エラーが返ること")
   void 例外テストポイント_例外が発生して400番エラーが返ること()throws Exception{
     // Act & Assert：GET /exception 実行で例外ハンドリングを確認
     mockMvc.perform(get("/exception"))
