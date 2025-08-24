@@ -2,6 +2,7 @@ package student.management.Student.Management.domein;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,6 @@ public class StudentDetail {
   private Student student;
 
   @Valid
-  private List<StudentCourse> studentCourseList;
+  private List<StudentCourse> studentCourseList = new ArrayList<>();
 
-}
+  }
