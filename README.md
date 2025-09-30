@@ -16,7 +16,7 @@
 - IntelliJ IDEA
 - Git / GitHub
 
----
+------
 
 ## 🎯 主な機能
 
