@@ -41,29 +41,53 @@
 ## 🗃 ディレクトリ構成
 
 ├── controller/
+
 │   ├── StudentController.java        # REST API用
+
 │   └── StudentViewController.java    # Thymeleaf画面用
+
 ├── service/
+
 │   └── StudentService.java
+
 ├── repository/
+
 │   └── StudentRepository.java
+
 ├── model/
+
 │   ├── Student.java
+
 │   ├── StudentCourse.java
+
 │   └── StudentDetail.java
+
 ├── converter/
+
 │   └── StudentConverter.java
+
 ├── exception/
+
 │   ├── GlobalExceptionHandler.java
+
 │   └── MyException.java
+
 ├── test/
+
 │   ├── controller/（Controller系）
+
 │   ├── service/（Service層）
+
 │   ├── converter/（変換ロジック）
+
 │   └── repository/（MyBatisテスト）
+
 └── templates/
+
 ├── studentList.html
+
 ├── registerStudent.html
+
 └── updateStudent.html
 
 ---
